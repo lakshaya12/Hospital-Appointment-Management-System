@@ -1,6 +1,7 @@
-
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
+
 
 class Patient {
     int tokenNumber;
@@ -12,21 +13,80 @@ class Patient {
     Patient(int tokenNumber, String name, int age,
             String department) {
         this.tokenNumber = tokenNumber;
-        this.name = name;
+        this.name = name;  
         this.age = age;
         this.department = department;
         this.served = false;
     }
 }
 
+
+   
+            
+
 public class HospitalAppointmentSystem {
 
     static Scanner sc = new Scanner(System.in);
     static ArrayList<Patient> patients = new ArrayList<>();
     static int nextToken = 1;
+    static void savePatients() {
+    try {
+        FileWriter writer = new FileWriter("patients.txt");
+
+        for (Patient p : patients) {
+            writer.write(
+                p.tokenNumber + "|" +
+                p.name + "|" +
+                p.age + "|" +
+                p.department + "|" +
+                p.served + "\n"
+            );
+        }
+
+        writer.close();
+        System.out.println("Patient details saved!");
+
+    } catch (IOException e) {
+        System.out.println("Error saving patient details.");
+    }
+}
+    static void loadPatients() {
+    try {
+        BufferedReader reader =
+            new BufferedReader(new FileReader("patients.txt"));
+
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            String[] data = line.split("\\|");
+
+            Patient p = new Patient(
+                Integer.parseInt(data[0]),
+                data[1],
+                Integer.parseInt(data[2]),
+                data[3]
+            );
+
+            p.served = Boolean.parseBoolean(data[4]);
+
+            patients.add(p);
+
+            if (p.tokenNumber >= nextToken) {
+                nextToken = p.tokenNumber + 1;
+            }
+        }
+
+        reader.close();
+
+    } catch (FileNotFoundException e) {
+        System.out.println("No previous patient records found.");
+    } catch (IOException e) {
+        System.out.println("Error loading patient details.");
+    }
+}
 
     public static void main(String[] args) {
-
+        loadPatients();
         int choice=0;
 
         do {
@@ -142,6 +202,7 @@ public class HospitalAppointmentSystem {
         );
 
         patients.add(p);
+        savePatients();
 
         System.out.println("\nAppointment Registered!");
         System.out.println("Patient Name: " + p.name);
@@ -214,6 +275,7 @@ public class HospitalAppointmentSystem {
                 System.out.println("Department: " + p.department);
 
                 p.served = true;
+                savePatients();
                 return;
             }
         }
